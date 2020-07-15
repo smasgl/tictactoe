@@ -1,0 +1,47 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v3.1",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v3.1": {
+      "TicTacToeConsole/1.0.0": {
+        "dependencies": {
+          "TicTacToeGame": "1.0.0",
+          "ToolBox": "1.0.0"
+        },
+        "runtime": {
+          "TicTacToeConsole.dll": {}
+        }
+      },
+      "TicTacToeGame/1.0.0": {
+        "runtime": {
+          "TicTacToeGame.dll": {}
+        }
+      },
+      "ToolBox/1.0.0": {
+        "runtime": {
+          "ToolBox.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "TicTacToeConsole/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "TicTacToeGame/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ToolBox/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
