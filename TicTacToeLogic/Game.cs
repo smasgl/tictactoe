@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace TicTacToeGame
 {
@@ -6,36 +7,54 @@ namespace TicTacToeGame
 
     public class Game
     {
+        static readonly Random random = new Random();
+        private readonly Player _player1;
+        private readonly Player _player2;
+        private Player _winner;
+        private Player _current;
+        private int _fullFields;
+        readonly int?[,] _fields = new int?[3, 3];
 
-
-        Player _player1;
-        Player _player2;
-        Player _winner;
-        Player _current;
-        int _fullFields;
-        int?[,] _fields = new int?[3, 3];
-
-        public Game(Player player1, Player player2, Player WhoBegins)
+        public Game(Player player1, Player player2, bool randomBeginner = false)
         {
             _player1 = player1;
+            _player1.PlayerNumber = 1;
             _player2 = player2;
+            _player2.PlayerNumber = 2;
+            _player1.Opponent = _player2;
+            _player2.Opponent = _player1;
 
-            _current = WhoBegins;
+            if (randomBeginner)
+                _current = random.Next(2) == 1 ? _player1 : _player2;
+            else
+                _current = player1;
         }
 
-        public bool PlayerInput(int x, int y)
+        public void PlayerInput(int x, int y)
         {
-            if (!CorrectInput(x, y))
-                return false;
 
-            _fields[y, x] = (_current == _player1) ? 1 : 2;
+            if (!CorrectInput(x, y)) return;
+
+            _fields[x, y] = (_current == _player1) ? 1 : 2;
             _current = (_current == _player1) ? _player2 : _player1;
 
             _fullFields++;
             if (_fullFields >= 5)
-                GameEnded();
+            {
+                int winnerPlayerNumber = Check4Winner(_fields);
 
-            return true;
+                _winner = winnerPlayerNumber == 1
+                            ? _player1
+                            : winnerPlayerNumber == 2
+                            ? _player2
+                            : null;
+            }
+
+            if (_current.GetType()!= typeof(HumanPlayer))
+            {
+                Move move = _current.GetMove(_fields, _current);
+                PlayerInput(move.XIndex, move.YIndex);
+            }           
         }
 
         private bool CorrectInput(int x, int y)
@@ -43,44 +62,56 @@ namespace TicTacToeGame
             if (x > 3 || y > 3 || x < 0 || y < 0)
                 return false;
 
-            if (_fields[y, x] != null)
+            if (_fields[x, y] != null)
                 return false;
 
             return true;
         }
 
-        private void GameEnded()
+        /// <summary>
+        /// Checks if a player has won the Game, it is a tie or it is still open.
+        /// </summary>
+        /// <param name="fields"></param>
+        /// <returns>-1 if still open, 0 if it is a tie, or playernumber if somebody won</returns>
+        internal static int Check4Winner(int?[,] fields)
         {
-            int winningPlayerNumber = 0;
-
-            for (int i = 0; i < 3; i++)
+            // Check if sb has won
+            for (int x = 0; x < 3; x++)
             {
-                if(_fields[i,0] == _fields[i,1] && _fields[i, 0] == _fields[i, 2] && _fields[i,0] != null)
+                if(fields[x,0] == fields[x,1] && fields[x, 0] == fields[x, 2] && fields[x,0] != null)
                 {
-                    winningPlayerNumber = Convert.ToInt32(_fields[i, 0]);
+                    return fields[x, 0].Value;
                 }
             }
-            for (int i = 0; i < 3; i++)
+            for (int y = 0; y < 3; y++)
             {
-                if (_fields[0, i] == _fields[1, i] && _fields[0, i] == _fields[2, i] && _fields[0, i] != null)
+                if (fields[0, y] == fields[1, y] && fields[0, y] == fields[2, y] && fields[0, y] != null)
                 {
-                    winningPlayerNumber = Convert.ToInt32(_fields[0, i]);
+                    return fields[0, y].Value;
                 }
             }
-            if (_fields[0, 0] == _fields[1, 1] && _fields[0, 0] == _fields[2, 2] && _fields[0, 0] != null)
+            if (fields[0, 0] == fields[1, 1] && fields[0, 0] == fields[2, 2] && fields[0, 0] != null)
             {
-                winningPlayerNumber = Convert.ToInt32(_fields[0, 0]);
+                return fields[0, 0].Value;
             }
-            if (_fields[2, 0] == _fields[1, 1] && _fields[2, 2] == _fields[0, 2] && _fields[2, 0] != null)
+            if (fields[2, 0] == fields[1, 1] && fields[2, 0] == fields[0, 2] && fields[2, 0] != null)
             {
-                winningPlayerNumber = Convert.ToInt32(_fields[2, 0]);
+                return fields[2, 0].Value;
             }
 
-            _winner = winningPlayerNumber == 1 
-                ? _player1 
-                : winningPlayerNumber == 2 
-                ? _player2
-                : null;
+
+
+            // Check if all fields are full (tie)
+            int emptyFields = 0;
+            foreach (var item in fields)
+            {
+                if (item == null)
+                    emptyFields++;
+            }
+
+            return emptyFields == 0
+                ? 0
+                : - 1;
         }
 
 
@@ -98,6 +129,14 @@ namespace TicTacToeGame
             get
             {
                 return _current;
+            }
+        }
+
+        public int FullFields
+        {
+            get
+            {
+                return _fullFields;
             }
         }
 
